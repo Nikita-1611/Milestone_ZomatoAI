@@ -1,5 +1,13 @@
 import streamlit as st
 import json
+import os
+
+# Seamless integration with Streamlit Cloud Secrets
+if hasattr(st, "secrets"):
+    if "POSTGRES_DSN" in st.secrets:
+        os.environ["POSTGRES_DSN"] = st.secrets["POSTGRES_DSN"]
+    if "GROQ_API_KEY" in st.secrets:
+        os.environ["GROQ_API_KEY"] = st.secrets["GROQ_API_KEY"]
 
 from backend.models.schemas import RecommendationRequest
 from backend.services.orchestrator import rank_with_llm_or_fallback
