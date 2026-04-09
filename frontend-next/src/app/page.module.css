@@ -1,0 +1,298 @@
+/* page.module.css */
+
+.header {
+  background: transparent;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 50;
+  padding: 16px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--white);
+  font-style: italic;
+  letter-spacing: -1px;
+}
+
+.headerLinks {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  color: var(--white);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.hero {
+  position: relative;
+  height: 480px;
+  background-image: url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=2600&auto=format&fit=crop');
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.heroOverlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.heroContent {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  width: 100%;
+  max-width: 800px;
+  padding-top: 40px;
+}
+
+.heroTitle {
+  font-size: 3rem;
+  font-weight: 400;
+  color: var(--white);
+  margin-bottom: 32px;
+}
+
+.heroTitleHighlight {
+  font-weight: 700;
+}
+
+.searchPill {
+  display: flex;
+  background: var(--white);
+  border-radius: 9999px;
+  padding: 8px 12px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  align-items: center;
+  gap: 12px;
+}
+
+.pillInputGroup {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-right: 1px solid var(--border-color);
+}
+
+.pillInputGroup:last-of-type {
+  border-right: none;
+}
+
+.pillSelect, .pillInput {
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  width: 100%;
+  color: var(--text-dark);
+}
+
+.pillSelect:focus, .pillInput:focus {
+  outline: none;
+}
+
+.pillSearchBtn {
+  background: var(--primary-color);
+  color: var(--white);
+  border: none;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+
+.pillSearchBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.filtersBar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filterBtn {
+  background: var(--white);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  background: #fdfdfd;
+  box-shadow: var(--shadow-md);
+}
+
+.actionBtn {
+  background: var(--primary-color);
+  color: var(--white);
+  border: none;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.actionBtn:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top-color: var(--white);
+  animation: spin 1s ease-in-out infinite;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
+  animation: fadeIn 0.4s ease-out;
+  border: 1px solid rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.cardImagePlaceholder {
+  height: 180px;
+  background: #e5e7eb;
+  position: relative;
+  width: 100%;
+}
+
+.cardContent {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.restaurantName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 12px;
+}
+
+.ratingBadge {
+  background: var(--rating-green);
+  color: var(--white);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.subHeading {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cuisines {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 12px 0;
+}
+
+.aiInsight {
+  background: var(--ai-insight-bg);
+  border-left: 3px solid var(--ai-insight-border);
+  padding: 12px 16px;
+  border-radius: 4px 8px 8px 4px;
+  font-size: 0.85rem;
+  color: #5c1111;
+  line-height: 1.5;
+  margin-top: auto;
+}
+
+.error {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid #f87171;
+  text-align: center;
+}

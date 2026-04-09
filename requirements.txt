@@ -1,0 +1,6 @@
+datasets
+psycopg[binary]
+python-dotenv
+fastapi
+uvicorn
+pytest

@@ -1,0 +1,10 @@
+{
+  "source_dataset": "ManikaSaini/zomato-restaurant-recommendation",
+  "source_split": "train",
+  "raw_records": 51717,
+  "valid_records": 13052,
+  "dropped_records": 21,
+  "deduplicated_records": 38644,
+  "snapshot_folder": "data_pipeline\\raw_ingestions\\20260409T183940Z",
+  "generated_at": "2026-04-09T18:39:44.111303+00:00"
+}

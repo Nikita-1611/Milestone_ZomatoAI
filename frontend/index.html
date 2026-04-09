@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zomato AI Recommendations</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 24px; background: #f7f7fb; color: #222; }
+      .container { max-width: 900px; margin: 0 auto; }
+      .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      label { font-size: 14px; font-weight: 600; margin-bottom: 6px; display: block; }
+      input, select, textarea { width: 100%; padding: 10px; border: 1px solid #cfd4dc; border-radius: 8px; font-size: 14px; }
+      textarea { resize: vertical; min-height: 70px; }
+      button { background: #0f62fe; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; cursor: pointer; font-weight: 600; }
+      button:disabled { opacity: 0.6; cursor: not-allowed; }
+      .muted { color: #6b7280; font-size: 13px; }
+      .error { color: #b91c1c; white-space: pre-wrap; }
+      .row { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+      .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #eef2ff; margin-right: 6px; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Zomato AI Recommendation Tester</h1>
+      <p class="muted">Basic UI for end-to-end testing (input -> backend -> retrieval/LLM -> response).</p>
+
+      <form id="recommendation-form" class="card">
+        <div class="grid">
+          <div>
+            <label for="location">Location</label>
+            <select id="location" name="location" required>
+              <option value="" disabled selected>Loading locations...</option>
+            </select>
+          </div>
+          <div>
+            <label for="budget">Budget (Max Cost for Two)</label>
+            <input id="budget" name="budget" type="number" min="100" step="100" value="1000" />
+          </div>
+          <div>
+            <label for="cuisines">Cuisines (comma-separated)</label>
+            <input id="cuisines" name="cuisines" placeholder="Italian, Chinese" />
+          </div>
+          <div>
+            <label for="min_rating">Minimum Rating (0-5)</label>
+            <input id="min_rating" name="min_rating" type="number" min="0" max="5" step="0.1" value="4.0" />
+          </div>
+        </div>
+        <div style="margin-top: 12px;">
+          <label for="additional_preferences">Additional Preferences</label>
+          <textarea id="additional_preferences" name="additional_preferences" placeholder="family-friendly, quick service"></textarea>
+        </div>
+        <div style="margin-top: 14px;">
+          <button id="submit-btn" type="submit">Get Recommendations</button>
+        </div>
+      </form>
+
+      <div id="status" class="muted" style="margin: 10px 0;"></div>
+      <div id="error" class="error"></div>
+      <div id="summary" class="card" style="display:none;"></div>
+      <div id="results"></div>
+    </div>
+
+    <script>
+      const form = document.getElementById("recommendation-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const statusEl = document.getElementById("status");
+      const errorEl = document.getElementById("error");
+      const summaryEl = document.getElementById("summary");
+      const resultsEl = document.getElementById("results");
+
+      function parseCuisines(raw) {
+        if (!raw.trim()) return [];
+        return raw.split(",").map(s => s.trim()).filter(Boolean).slice(0, 5);
+      }
+
+      function renderResults(data) {
+        summaryEl.style.display = "block";
+        summaryEl.textContent = data.summary || "No summary";
+        resultsEl.innerHTML = "";
+
+        if (!data.recommendations || data.recommendations.length === 0) {
+          resultsEl.innerHTML = '<div class="card muted">No recommendations found for this request.</div>';
+          return;
+        }
+
+        data.recommendations.forEach((item, idx) => {
+          const cuisines = (item.cuisine || []).map(c => `<span class="pill">${c}</span>`).join("");
+          const block = `
+            <div class="card">
+              <div class="row">
+                <h3 style="margin:0;">#${idx + 1} ${item.restaurant_name}</h3>
+                <div class="muted">Rating: ${item.rating ?? "N/A"} | Cost for two: ${item.estimated_cost_for_two ?? "N/A"}</div>
+              </div>
+              <div style="margin:8px 0 6px 0;">${cuisines}</div>
+              <div>${item.ai_explanation}</div>
+            </div>
+          `;
+          resultsEl.insertAdjacentHTML("beforeend", block);
+        });
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        errorEl.textContent = "";
+        resultsEl.innerHTML = "";
+        summaryEl.style.display = "none";
+        statusEl.textContent = "Fetching recommendations...";
+        submitBtn.disabled = true;
+
+        const payload = {
+          location: document.getElementById("location").value,
+          budget: Number(document.getElementById("budget").value || 1000),
+          cuisines: parseCuisines(document.getElementById("cuisines").value),
+          min_rating: Number(document.getElementById("min_rating").value || 0),
+          additional_preferences: document.getElementById("additional_preferences").value.trim() || null
+        };
+
+        try {
+          const res = await fetch("/v1/recommendations", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            errorEl.textContent = typeof data === "object" ? JSON.stringify(data, null, 2) : String(data);
+            statusEl.textContent = "Request failed.";
+            return;
+          }
+          renderResults(data);
+          statusEl.textContent = "Done.";
+        } catch (err) {
+          errorEl.textContent = String(err);
+          statusEl.textContent = "Network or server error.";
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+      document.addEventListener("DOMContentLoaded", async () => {
+        const locationSelect = document.getElementById("location");
+        try {
+          const res = await fetch("/v1/locations");
+          if (!res.ok) throw new Error("Failed to fetch locations");
+          const locations = await res.json();
+          
+          locationSelect.innerHTML = "";
+          locations.forEach(loc => {
+            const opt = document.createElement("option");
+            opt.value = loc;
+            opt.textContent = loc;
+            locationSelect.appendChild(opt);
+          });
+          if (locations.length > 0) {
+            locationSelect.value = locations[0];
+          }
+        } catch (err) {
+          console.error(err);
+          locationSelect.innerHTML = '<option value="" disabled selected>Error loading locations</option>';
+        }
+      });
+    </script>
+  </body>
+</html>
