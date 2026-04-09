@@ -27,7 +27,8 @@ with st.sidebar:
         available_locations = fetch_locations()
         if not available_locations:
             available_locations = BANGALORE_LOCALITIES
-    except Exception:
+    except Exception as e:
+        st.error(f"DB Location Fetch Error: {e}")
         available_locations = BANGALORE_LOCALITIES
 
     location = st.selectbox("Location", available_locations)
@@ -60,11 +61,12 @@ if st.button("Get Recommendations"):
     with st.spinner("Fetching candidates from database..."):
         try:
             candidates = get_ranked_candidates(normalized)
-        except Exception:
+        except Exception as e:
+            st.error(f"Database Fetch Error: {e}")
             candidates = []
             
     if not candidates:
-        st.info("Using simulated data (Database not connected in Cloud deploy).")
+        st.info("No candidates retrieved from database. Falling back to simulated data.")
         candidates = [
             Candidate(
                 id="mock-1",
