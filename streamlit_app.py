@@ -17,10 +17,8 @@ with st.sidebar:
         available_locations = fetch_locations()
         if not available_locations:
             available_locations = ["Bangalore", "Mumbai", "Delhi"]
-            st.warning("DB returned no locations. Using fallback locations.")
-    except Exception as e:
+    except Exception:
         available_locations = ["Bangalore", "Mumbai", "Delhi"]
-        st.error(f"Failed to fetch locations from DB: {e}")
 
     location = st.selectbox("Location", available_locations)
     budget = st.number_input("Budget (Cost for Two)", min_value=100.0, value=1000.0, step=100.0)
