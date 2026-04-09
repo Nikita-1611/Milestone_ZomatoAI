@@ -1,23 +1,26 @@
 import streamlit as st
-import requests
+import json
+
+from backend.models.schemas import RecommendationRequest
+from backend.services.orchestrator import rank_with_llm_or_fallback
+from backend.services.retrieval import get_ranked_candidates, fetch_locations
+from backend.services.validators import normalize_request, validate_semantics
 
 st.set_page_config(page_title="Zomato AI Backend Tester", layout="wide")
 
 st.title("Zomato AI Backend - Streamlit Deployment")
-st.markdown("Use this interface to test the FastAPI backend directly via Streamlit.")
+st.markdown("Use this interface to test the backend logic directly via Streamlit.")
 
-BACKEND_URL = "http://127.0.0.1:8000/v1"
+BANGALORE_LOCALITIES = ["Whitefield", "Koramangala", "Indiranagar", "Jayanagar", "Yelahanka", "HSR Layout", "Malleshwaram", "JP Nagar", "Marathahalli", "Bellandur"]
 
 with st.sidebar:
     st.header("Search Filters")
     try:
-        res = requests.get(f"{BACKEND_URL}/locations", timeout=3)
-        if res.ok and res.json():
-            available_locations = res.json()
-        else:
-            available_locations = ["Bangalore", "Mumbai", "Delhi"]
+        available_locations = fetch_locations()
+        if not available_locations:
+            available_locations = BANGALORE_LOCALITIES
     except Exception:
-        available_locations = ["Bangalore", "Mumbai", "Delhi"]
+        available_locations = BANGALORE_LOCALITIES
 
     location = st.selectbox("Location", available_locations)
     budget = st.number_input("Budget (Cost for Two)", min_value=100.0, value=1000.0, step=100.0)
@@ -36,29 +39,36 @@ if st.button("Get Recommendations"):
         "additional_preferences": preferences.strip() or None
     }
     
-    with st.spinner("Fetching recommendations from FastAPI..."):
+    try:
+        req = RecommendationRequest(**payload_dict)
+        validate_semantics(req)
+        normalized = normalize_request(req)
+    except Exception as e:
+        st.error(f"Validation Error: {e}")
+        st.stop()
+    
+    with st.spinner("Fetching candidates from database..."):
         try:
-            response = requests.post(f"{BACKEND_URL}/recommendations", json=payload_dict, timeout=30)
-            if not response.ok:
-                st.error(f"API Error: {response.text}")
-                st.stop()
-            
-            data = response.json()
+            candidates = get_ranked_candidates(normalized)
         except Exception as e:
-            st.error(f"Failed to connect to FastAPI backend: {e}")
+            st.error(f"Database error: {e}")
             st.stop()
             
-    summary = data.get("summary", "Done.")
-    items = data.get("recommendations", [])
-    
+    if not candidates:
+        st.warning("No candidates found matching your criteria. (If on cloud, ensure POSTGRES_DSN is configured in secrets)")
+        st.stop()
+        
+    with st.spinner("Ranking candidates using LLM Orchestrator..."):
+        try:
+            items, summary = rank_with_llm_or_fallback(normalized, candidates)
+        except Exception as e:
+            st.error(f"LLM Orchestration error: {e}")
+            st.stop()
+            
     st.success(summary)
     
-    if not items:
-        st.warning("No candidates found matching your criteria.")
-    else:
-        for idx, item in enumerate(items):
-            with st.expander(f"**{idx+1}. {item.get('restaurant_name')}** ({item.get('rating')} ⭐)"):
-                cuisine_text = ", ".join(item.get("cuisine", []))
-                st.write(f"**Cuisines:** {cuisine_text}")
-                st.write(f"**Estimated Cost for Two:** ₹{item.get('estimated_cost_for_two')}")
-                st.write(f"**AI Insight:** {item.get('ai_explanation')}")
+    for idx, item in enumerate(items):
+        with st.expander(f"**{idx+1}. {item.restaurant_name}** ({item.rating} ⭐)"):
+            st.write(f"**Cuisines:** {', '.join(item.cuisine)}")
+            st.write(f"**Estimated Cost for Two:** ₹{item.estimated_cost_for_two}")
+            st.write(f"**AI Insight:** {item.ai_explanation}")
