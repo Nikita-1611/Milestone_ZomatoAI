@@ -15,6 +15,9 @@ with st.sidebar:
     st.header("Search Filters")
     try:
         available_locations = fetch_locations()
+        if not available_locations:
+            available_locations = ["Bangalore", "Mumbai", "Delhi"]
+            st.warning("DB returned no locations. Using fallback locations.")
     except Exception as e:
         available_locations = ["Bangalore", "Mumbai", "Delhi"]
         st.error(f"Failed to fetch locations from DB: {e}")
