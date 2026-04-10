@@ -14,7 +14,7 @@ class BackendSettings:
 
 
 def load_backend_settings() -> BackendSettings:
-    load_dotenv()
+    load_dotenv(override=False)
     return BackendSettings(
         postgres_dsn=os.getenv("POSTGRES_DSN", "").strip(),
         groq_api_key=os.getenv("GROQ_API_KEY", "").strip() or None,
