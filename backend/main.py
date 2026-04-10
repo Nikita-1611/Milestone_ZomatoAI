@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 
-from backend.models.schemas import (
+from .models.schemas import (
     RecommendationRequest,
     RecommendationResponse,
 )
-from backend.services.orchestrator import rank_with_llm_or_fallback
-from backend.services.retrieval import get_ranked_candidates, fetch_locations
-from backend.services.validators import normalize_request, validate_semantics
+from .services.orchestrator import rank_with_llm_or_fallback
+from .services.retrieval import get_ranked_candidates, fetch_locations
+from .services.validators import normalize_request, validate_semantics
 
 app = FastAPI(
     title="Zomato AI Recommendation API",
