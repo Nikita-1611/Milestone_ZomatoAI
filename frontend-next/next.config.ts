@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/v1/:path*",
-        destination: `${process.env.BACKEND_URL || "https://milestonezomatoai.streamlit.app"}/v1/:path*`,
+        destination: `${process.env.BACKEND_URL || "https://zomato-ai-backend.onrender.com"}/v1/:path*`,
       },
     ];
   },
