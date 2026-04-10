@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from fastapi import FastAPI
-from fastapi.responses import FileResponse
 
 from backend.models.schemas import (
     RecommendationRequest,
@@ -18,8 +15,7 @@ app = FastAPI(
     version="0.1.0",
     description="Phase 4 backend with deterministic retrieval + LLM orchestration.",
 )
-ROOT_DIR = Path(__file__).resolve().parent.parent
-UI_FILE = ROOT_DIR / "frontend" / "index.html"
+
 
 
 @app.get("/health")
@@ -27,9 +23,9 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/", response_class=FileResponse)
-def ui() -> FileResponse:
-    return FileResponse(UI_FILE)
+@app.get("/")
+def root() -> dict[str, str]:
+    return {"status": "ok", "message": "Zomato AI API is live"}
 
 
 @app.get("/v1/locations")

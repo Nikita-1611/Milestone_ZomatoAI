@@ -5,3 +5,6 @@ fastapi
 uvicorn
 pytest
 streamlit
+groq
+pydantic
+httpx
